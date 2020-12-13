@@ -71,10 +71,10 @@ func (cc *CeleryClient) Delay(task string, args ...interface{}) (*AsyncResult, e
 }
 
 
-func (cc *CeleryClient) DelayEx(task, routing_key, exchange, queue string, args ...interface{}) (*AsyncResult, error) {
+func (cc *CeleryClient) DelayEx(task, exchange, routing_key string, args ...interface{}) (*AsyncResult, error) {
 	celeryTask := getTaskMessage(task)
 	celeryTask.Args = args
-	return cc.delayEx(celeryTask, routing_key, exchange, queue)
+	return cc.delayEx(celeryTask, exchange, routing_key)
 }
 
 // DelayKwargs gets asynchronous results with argument map
@@ -103,17 +103,17 @@ func (cc *CeleryClient) delay(task *TaskMessage) (*AsyncResult, error) {
 }
 
 
-func (cc *CeleryClient) delayEx(task *TaskMessage, routing_key, exchange, queue string) (*AsyncResult, error) {
+func (cc *CeleryClient) delayEx(task *TaskMessage, exchange, routing_key string) (*AsyncResult, error) {
 	defer releaseTaskMessage(task)
 	encodedMessage, err := task.Encode()
 	if err != nil {
 		return nil, err
 	}
-	celeryMessage := getCeleryMessageEx(encodedMessage, SetRoutingKey(routing_key), SetExchange(exchange))
+	celeryMessage := getCeleryMessage(encodedMessage)
 	defer releaseCeleryMessage(celeryMessage)
 	b := cc.broker.(*AMQPCeleryBroker)
 	if b != nil {
-		err = b.SendCeleryMessageEx(celeryMessage, exchange, routing_key, queue)
+		err = b.SendCeleryMessageEx(celeryMessage, exchange, routing_key)
 	} else {
 		err = cc.broker.SendCeleryMessage(celeryMessage)
 	}

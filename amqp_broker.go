@@ -158,11 +158,9 @@ func (b *AMQPCeleryBroker) SendCeleryMessage(message *CeleryMessage) error {
 	)
 }
 
-func (b *AMQPCeleryBroker) SendCeleryMessageEx(message *CeleryMessage, exchange, key, queueName string) error {
+func (b *AMQPCeleryBroker) SendCeleryMessageEx(message *CeleryMessage, exchange, routing_key string) error {
 	taskMessage := message.GetTaskMessage()
-	if queueName  == "" {
-		queueName = "celery"
-	}
+	queueName := "celery"
 	_, err := b.QueueDeclare(
 		queueName, // name
 		true,      // durable
@@ -174,9 +172,9 @@ func (b *AMQPCeleryBroker) SendCeleryMessageEx(message *CeleryMessage, exchange,
 	if err != nil {
 		return err
 	}
-	err = b.ExchangeDeclare(
-		exchange, //"default",
-		"topic",
+	err = b.ExchangeDeclarePassive(
+		"default",
+		"direct",
 		true,
 		true,
 		false,
@@ -198,10 +196,12 @@ func (b *AMQPCeleryBroker) SendCeleryMessageEx(message *CeleryMessage, exchange,
 		ContentType:  "application/json",
 		Body:         resBytes,
 	}
+	// fmt.Printf("exchange: %s\n", exchange)
+	// fmt.Printf("routing_key: %s\n", routing_key)
 
 	return b.Publish(
 		exchange, //"",
-		key, //queueName,
+		routing_key, //queueName,
 		false,
 		false,
 		publishMessage,
