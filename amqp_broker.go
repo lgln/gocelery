@@ -158,6 +158,56 @@ func (b *AMQPCeleryBroker) SendCeleryMessage(message *CeleryMessage) error {
 	)
 }
 
+func (b *AMQPCeleryBroker) SendCeleryMessageEx(message *CeleryMessage, queueName string) error {
+	taskMessage := message.GetTaskMessage()
+	if queueName  == "" {
+		queueName = "celery"
+	}
+	_, err := b.QueueDeclare(
+		queueName, // name
+		true,      // durable
+		false,     // autoDelete
+		false,     // exclusive
+		false,     // noWait
+		nil,       // args
+	)
+	if err != nil {
+		return err
+	}
+	err = b.ExchangeDeclare(
+		"default",
+		"direct",
+		true,
+		true,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	resBytes, err := json.Marshal(taskMessage)
+	if err != nil {
+		return err
+	}
+
+	publishMessage := amqp.Publishing{
+		DeliveryMode: amqp.Persistent,
+		Timestamp:    time.Now(),
+		ContentType:  "application/json",
+		Body:         resBytes,
+	}
+
+	return b.Publish(
+		"",
+		queueName,
+		false,
+		false,
+		publishMessage,
+	)
+}
+
 // GetTaskMessage retrieves task message from AMQP queue
 func (b *AMQPCeleryBroker) GetTaskMessage() (*TaskMessage, error) {
 	select {

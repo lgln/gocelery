@@ -24,6 +24,20 @@ type CeleryMessage struct {
 	ContentEncoding string                 `json:"content-encoding"`
 }
 
+type Option func(*CeleryMessage)
+
+func RoutingKey(routing_key string) Option {
+	return func(msg *CeleryMessage) {
+		msg.Properties.DeliveryInfo.RoutingKey = routing_key
+	}
+}
+
+func Exchange(exchange string) Option {
+	return func(msg *CeleryMessage) {
+		msg.Properties.DeliveryInfo.Exchange = exchange
+	}
+}
+
 func (cm *CeleryMessage) reset() {
 	cm.Headers = nil
 	cm.Body = ""
@@ -57,6 +71,16 @@ var celeryMessagePool = sync.Pool{
 
 func getCeleryMessage(encodedTaskMessage string) *CeleryMessage {
 	msg := celeryMessagePool.Get().(*CeleryMessage)
+	msg.Body = encodedTaskMessage
+	return msg
+}
+
+
+func getCeleryMessageEx(encodedTaskMessage string, opts ...Option) *CeleryMessage {
+	msg := celeryMessagePool.Get().(*CeleryMessage)
+	for _, opt := range opts {
+		opt(msg)
+	}
 	msg.Body = encodedTaskMessage
 	return msg
 }
