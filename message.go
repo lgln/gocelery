@@ -26,15 +26,19 @@ type CeleryMessage struct {
 
 type Option func(*CeleryMessage)
 
-func RoutingKey(routing_key string) Option {
+func SetRoutingKey(routing_key string) Option {
 	return func(msg *CeleryMessage) {
-		msg.Properties.DeliveryInfo.RoutingKey = routing_key
+		if routing_key != "" {
+			msg.Properties.DeliveryInfo.RoutingKey = routing_key
+		}
 	}
 }
 
-func Exchange(exchange string) Option {
+func SetExchange(exchange string) Option {
 	return func(msg *CeleryMessage) {
-		msg.Properties.DeliveryInfo.Exchange = exchange
+		if exchange != "" {
+			msg.Properties.DeliveryInfo.Exchange = exchange
+		}
 	}
 }
 
