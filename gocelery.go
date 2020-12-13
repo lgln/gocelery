@@ -113,7 +113,7 @@ func (cc *CeleryClient) delayEx(task *TaskMessage, routing_key, exchange, queue 
 	defer releaseCeleryMessage(celeryMessage)
 	b := cc.broker.(*AMQPCeleryBroker)
 	if b != nil {
-		err = b.SendCeleryMessageEx(celeryMessage, queue)
+		err = b.SendCeleryMessageEx(celeryMessage, exchange, routing_key, queue)
 	} else {
 		err = cc.broker.SendCeleryMessage(celeryMessage)
 	}

@@ -158,7 +158,7 @@ func (b *AMQPCeleryBroker) SendCeleryMessage(message *CeleryMessage) error {
 	)
 }
 
-func (b *AMQPCeleryBroker) SendCeleryMessageEx(message *CeleryMessage, queueName string) error {
+func (b *AMQPCeleryBroker) SendCeleryMessageEx(message *CeleryMessage, exchange, key, queueName string) error {
 	taskMessage := message.GetTaskMessage()
 	if queueName  == "" {
 		queueName = "celery"
@@ -175,8 +175,8 @@ func (b *AMQPCeleryBroker) SendCeleryMessageEx(message *CeleryMessage, queueName
 		return err
 	}
 	err = b.ExchangeDeclare(
-		"default",
-		"direct",
+		exchange, //"default",
+		"topic",
 		true,
 		true,
 		false,
@@ -200,8 +200,8 @@ func (b *AMQPCeleryBroker) SendCeleryMessageEx(message *CeleryMessage, queueName
 	}
 
 	return b.Publish(
-		"",
-		queueName,
+		exchange, //"",
+		key, //queueName,
 		false,
 		false,
 		publishMessage,
