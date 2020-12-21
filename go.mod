@@ -9,4 +9,4 @@ require (
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 
-replace github.com/gocelery/gocelery v0.0.0-20201111034804-825d89059344 => github.com/lgln/gocelery v0.0.0-20201213035341-eeaf62b4190b
+replace github.com/gocelery/gocelery master => github.com/lgln/gocelery master
